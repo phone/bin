@@ -1,0 +1,51 @@
+#!/bin/bash
+usage() {
+	cat <<-END >&2
+	usage: toggle-mysqld-log [-f LOGFILE]
+	
+	toggle the mysqld general log. the default
+	logfile is /var/log/mysqld/general.log.
+	If LOGFILE is not a writable file, this
+	script has no effect and returns 1.
+	
+	BUGS:
+	if the user running mysqld can write to
+	LOGFILE, we still bail. We only consider
+	the user running the script.
+END
+	exit 1
+}
+logfile="/var/log/mysqld/general.log"
+while getopts ":f:" opt; do
+	case $opt in
+	f) logfile="$OPTARG" ;;
+	h|?) usage ;;
+	esac
+done
+
+if [ ! -w "$logfile" ]; then
+	bad=true
+	if mkdir -p $(dirname "$logfile"); then
+		if touch "$logfile"; then
+			bad=false
+		fi
+	fi
+	if bad; then
+		echo "$logfile not writable" ;
+		exit 1;
+	fi
+fi
+
+logging_on="$(mysql -sNe 'select @@global.general_log')"
+if [ "$logging_on" = "1" ]; then
+	mysql -u root -sNe 'set global general_log = 0'
+	echo "logging OFF"
+else
+	mysql -u root -sNe 'set global general_log = 1'
+	mylogfile="$(mysql -sne 'select @@global.general_log_file')"
+	if [ "$mylogfile" != "$logfile" ]; then
+		mysql -u root -sNe "set global general_log_file=$logfile"
+	fi
+	echo "logging queries to: $logfile"
+	exit
+fi

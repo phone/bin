@@ -1,0 +1,18 @@
+#!/usr/local/bin/python
+import sys,boto,os
+from optparse import OptionParser
+if __name__ == "__main__":
+	op = OptionParser()
+	## Key file format: access key on first line, secret key on second line.
+	op.add_option("--aws-keys-file", dest="awsKeysFile", default="/root/aws.keys")
+	op.add_option("--dest-bucket", dest="destBucket", default="cogo-flx")
+	op.add_option("--dest-key", dest="destKey")
+	op.add_option("--src-file", dest="srcFile")
+	options, args = op.parse_args(sys.argv)
+	if not os.access(options.awsKeysFile, os.F_OK):
+		raise Exception("Missing key file " + options.awsKeysFile)
+	keys = open(options.awsKeysFile, "r").read().split("\n")[:2]
+	c = boto.connect_s3(*keys)
+	b = c.get_bucket(options.destBucket)
+	k = b.new_key(options.destKey)
+	k.set_contents_from_filename(sys.stdin)

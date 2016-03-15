@@ -1,0 +1,81 @@
+#!/bin/bash
+LOGFILE="/var/log/rancher/rancher.log"
+ENDPT="https://zookeeper-0.servers.clovesoftware.com:8099/api"
+USER="elliot"
+PASSWD="x"
+usage () {
+	cat <<-END >&2
+	usage: zkset [-hn] [-l LOGFILE] [-e ENDPT] [-u USER] [-p PASSWD] PATH VALUE
+	
+	Set the value of PATH to VALUE.
+	echo to STDOUT the previous value at zookeeper path PATH.
+	LOGFILE defaults to /var/log/rancher/rancher.log
+	ENDPT defaults to https://zookeeper-0.servers.clovesoftware.com:8088/api
+	USER (default elliot) and PASSWD (default x) are used for basic
+	auth against rancher.
+	-h displays this message.
+	-n disables basic auth
+END
+	exit
+}
+zkset () {
+	if [ $# -ne 1 ]; then return 1; fi
+	node="$1"
+	val=""
+	shift
+	if [ $# -ne 1 ]; then
+		val="$1"
+	fi
+	cmd=""
+	cmd_get="curl -k -u $USER:$PASSWD -s ${ENDPT}${path} -w -o /dev/null '%{http_code}'"
+	http_code=$(eval $cmd_get)
+	case $http_code in
+	*200)
+		if [ $val ]; then
+			cmd="curl -XPUT -k $AUTH -s ${ENDPT}${path}?force=true -d \"$val\" 2>&1"
+		else
+			cmd="curl -XPUT -k $AUTH -s ${ENDPT}${path}?force=true 2>&1"
+		fi
+		;;
+	*404)
+		if [ $val ]; then
+			cmd="curl -XPOST -k $AUTH -s ${ENDPT}${path}?createparents=true -d \"$val\" 2>&1"
+		else
+			cmd="curl -XPOST -k $AUTH -s ${ENDPT}${path}?createparents=true 2>&1"
+		fi
+		;;
+	*) printf "%s: unknown code: %d\n" "${cmd_get}" "$exists"; exit 1;;
+	esac
+	eval "$cmd"
+	if [ -f $LOGFILE ]; then
+		echo $cmd >> $LOGFILE
+	fi
+}
+while getopts ":hnl:e:u:p:" opt; do
+	case $opt in
+	l) LOGFILE=$OPTARG ;;
+	e) ENDPT=$OPTARG ;;
+	u) USER=$OPTARG ;;
+	p) PASSWD=$OPTARG ;;
+	n) USER="";;
+	h|?) usage ;;
+	esac
+done
+if [ $USER ]; then
+	AUTH="-u $USER:$PASSWD"
+else
+	AUTH=""
+fi
+shift $(( $OPTIND - 1 ))
+printf "after shifting off optind-1, we have %d args\n" $#
+if [ $# -gte 1 ]; then
+	path="$1"
+else
+	usage
+fi
+shift
+case $# in
+	0) zkset $path ;;
+	1) zkset $path $1 ;;
+	*) usage ;;
+esac

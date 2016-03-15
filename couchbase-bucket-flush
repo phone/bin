@@ -1,0 +1,3 @@
+#!/bin/bash
+/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/couchbase-cli bucket-edit -c 127.0.0.1:8091 -u Administrator -p password --bucket=default --enable-flush=1
+/Applications/Couchbase\ Server.app/Contents/Resources/couchbase-core/bin/couchbase-cli bucket-flush -c 127.0.0.1:8091 -u Administrator -p password --bucket=default

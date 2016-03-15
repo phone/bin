@@ -1,0 +1,28 @@
+#!/bin/bash
+usage() {
+	cat <<-'END' >&2
+		usage: install-munin-node.sh HOST
+
+		sets FQDN on HOST to that hosts $HOSTNAME,
+		installs munin-node, sets the configuration to allow
+		connections from all 4tcp hosts, registers itself
+		with the master
+END
+	exit
+}
+case $# in
+	1)
+		ssh -t -t $1 <<-'END'
+		sudo ed -s /etc/hosts <<< "$(echo -e "2i\n127.0.0.1 $HOSTNAME localhost\n.\nw\nq\n")"
+		sudo apt-get -y install munin-node
+		sudo ed -s /etc/munin/munin-node.conf <<< "$(echo -e "g/^allow/d\na\nallow ^\d+\.\d+\.\d+\.\d+$\n.\nw\nq\n")"
+		sudo killall munin-node
+		echo -e "$(hostname --fqdn)" | nc munin.servers.clovesoftware.com 4747
+		exit
+		END
+		;;
+	*)
+		usage
+		;;
+esac
+

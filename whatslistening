@@ -1,0 +1,18 @@
+#!/bin/bash
+
+re='^[0-9]+$';
+{
+	while read proc pid usr bs1 ipv bs2 bs3 prot bindr actv;
+	do
+		svcaddr="$(echo $bindr | cut -d':' -f 1)";
+		svcport="$(echo $bindr | cut -d':' -f 2)";
+		if ! [[ $svcport =~ $re ]]; then
+			rslt="$(cat /etc/services |
+				awk '$1 == "'"$svcport"'" {print $2}' |
+				awk -F'/' '$2 == tolower("'"$prot"'") {print $1}')";
+		else
+			rslt=$svcport;
+		fi;
+		printf "%s %s %s %s %s %s %s %s %s %s\n" $proc $pid $usr $bs1 $ipv $bs2 $bs3 $prot "${svcaddr}:${rslt}" $actv;
+	done
+} <<< "$(lsof -i 4tcp | grep LIST)" | column -t

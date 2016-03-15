@@ -1,0 +1,56 @@
+#!/usr/local/bin/bash
+usage() {
+	cat <<-END >&2
+	usage: zkcpr [-ph] SOURCE DESTINATION
+	
+	Recursively copy zookeeper source path to destination path.
+	If the -p option is specified, we pretend, and print the
+	commands we would have run. The -h option prints this message.
+END
+	exit
+}
+ENDPT="https://turbinate.cogolo.net:8088/api"
+PFX=""
+src=""
+dst=""
+while getopts ":ph" opt; do
+	case $opt in
+	p)	PFX="echo"	;;
+	h|?)	usage	;;
+	esac
+done
+shift $(( $OPTIND - 1 ))
+if [ $# -eq 2 ]; then
+	src=$1
+	dst=$2
+else
+	usage
+fi
+if [ -z "$src" -o -z "$dst" ]; then
+	usage
+fi
+if [ "${src: -1}" != "/" ]; then
+	src="${src}""/"
+fi
+if [ "${dst: -1}" != "/" ]; then
+	dst="${dst}""/"
+fi
+if [ "$PFX" ]; then
+	printf "pretending to copy from %s to %s\n" "$src" "$dst"
+fi
+curl -s ${ENDPT}${src}"?recursive=true" 2>&1 | {
+	mapfile -t locations;
+	for location in ${locations[@]}; do
+		val="$(curl -s ${ENDPT}${location} 2>&1)";
+		newloc=${ENDPT}${dst}${location#${src}};
+		exists=$(curl -s ${newloc} -w " %{http_code}")
+		case $exists in
+		*200)
+			${PFX} curl -s -XPUT ${newloc}?force=true -d "${val}";;
+		*404)
+			${PFX} curl -s -XPOST ${newloc}?createparents=true -d "${val}";;
+		*)
+			printf "%s: unknown code: %d\n" "${newloc}" "$exists"
+		esac
+	done
+}

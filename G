@@ -1,0 +1,8 @@
+#/usr/bin/bash
+if [ $# -ne 1 ]; then exit 1; fi
+direc="."
+while [ -z "$(ls -a $direc | grep \.git)" -a "$direc" != "/" ];
+do
+	direc="$(realpath "${direc}/..")";
+done
+grep -rn "$1" "${direc%\/}" | grep -v '^Binary file '

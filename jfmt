@@ -1,0 +1,2 @@
+#!/bin/bash
+/usr/local/bin/Fmt astyle -A8 -T -Y -xe --mode=java

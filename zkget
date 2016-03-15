@@ -1,0 +1,42 @@
+#!/bin/bash
+LOGFILE="/var/log/rancher/rancher.log"
+ENDPT="https://zookeeper-0.servers.clovesoftware.com:8088/api"
+USER="elliot"
+PASSWD="x"
+usage () {
+	cat <<-END >&2
+	usage: zkget [-h] [-l LOGFILE] [-e ENDPT] [-u USER] [-p PASSWD] PATH [PATH ...]
+	
+	echo to STDOUT the value at zookeeper path PATH, for every PATH specified.
+	LOGFILE defaults to /var/log/rancher/rancher.log
+	ENDPT defaults to https://zookeeper-0.servers.clovesoftware.com:8088/api
+	USER (default elliot) and PASSWD (default x) are used for basic
+	auth against rancher.
+	-h displays this message.
+END
+	exit
+}
+while getopts ":hl:e:u:p:" opt; do
+	case $opt in
+	l) LOGFILE=$OPTARG ;;
+	e) ENDPT=$OPTARG ;;
+	u) USER=$OPTARG ;;
+	p) PASSWD=$OPTARG ;;
+	h|?) usage ;;
+	esac
+done
+shift $(( $OPTIND - 1 ))
+
+while [ $# -ge 1 ];
+do
+	path="$1"
+	if [ ${path:0:1} != "/" ]; then
+		path = "/""$path"
+	fi
+	cmd="curl -k -u $USER:$PASSWD -s ${ENDPT}${path} 2>&1"
+	eval $cmd;
+	if [ -f $LOGFILE ]; then
+		echo $cmd >> $LOGFILE
+	fi
+	shift
+done
