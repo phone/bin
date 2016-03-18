@@ -1,0 +1,3 @@
+#!/bin/sh
+./osx_build
+cp ./seticon ../seticon

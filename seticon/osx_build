@@ -1,0 +1,3 @@
+#!/bin/sh
+clang -g -Wall -Wno-null-dereference -c seticon.m
+clang -g -Wall -Wno-null-dereference -framework Cocoa -framework QuartzCore -framework OpenGL -framework IOKit -framework AudioUnit -o seticon seticon.o
