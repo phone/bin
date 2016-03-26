@@ -1,0 +1,11 @@
+#!/bin/sh
+pushd $(dirname $0) >/dev/null
+npm install
+pwd=$(pwd|sed -e 's/\//\\\//g')
+ed -s "$(pwd)/sitedl.tmpl" <<-END
+	,g/LOCTEMPLATE/ .s/LOCTEMPLATE/$pwd
+	w sitedl
+	q
+END
+chmod a+x sitedl
+popd >/dev/null

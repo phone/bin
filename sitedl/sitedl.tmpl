@@ -1,0 +1,35 @@
+#!/bin/sh
+set +e
+LOC="LOCTEMPLATE"
+site=
+file=
+
+function usage {
+	cat <<-END >&2
+	usage: sitedl SITE FILE
+	Load and render the page at SITE, and download
+	the HTML contents to FILE.
+END
+	exit 1;
+}
+function fileerr {
+	echo "sitedl: invalid FILE"
+	exit 2;
+}
+
+if [ $# -ne 2 ]; then
+	usage;
+else
+	site=$1;
+	file=$2;
+fi
+touch "$file"
+case $? in
+0)	;;
+*) usage	;;
+esac
+file=$(readlink -f $(dirname $file)/$(basename $file))
+
+pushd $LOC >/dev/null
+npm start $site $file 2>/dev/null
+popd >/dev/null

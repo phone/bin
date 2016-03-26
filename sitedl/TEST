@@ -1,0 +1,41 @@
+#!/bin/sh
+set +e
+
+function cleanup {
+	rm -f "$file1" "$file2" "$file3"
+}
+trap cleanup ERR INT TERM HUP EXIT
+
+pushd $(dirname $0) >/dev/null
+
+site1="https://www.reddit.com/"
+file1=$(mktemp)
+./sitedl "$site1" "$file1" 2>/dev/null
+case $? in
+0) echo "PASS sitedl $site1 $file1"	;;
+*) echo "FAIL sitedl $site1 $file1"	;;
+esac
+
+site2="$site1"
+file2="/etc/test.html"
+./sitedl "$site2" "$file2" 2>/dev/null
+case $? in
+0) echo "FAIL sitedl $site2 $file2"	;;
+*) echo "PASS sitedl $site2 $file2"	;;
+esac
+
+site3=
+file3=$(mktemp)
+./sitedl "$file3" 2>/dev/null
+case $? in
+0) echo "FAIL sitedl $file3"	;;
+*) echo "PASS sitedl $file3"	;;
+esac
+
+./sitedl 2>/dev/null
+case $? in
+0) echo "FAIL sitedl"	;;
+*) echo "PASS sitedl"	;;
+esac
+
+popd >/dev/null

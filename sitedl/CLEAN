@@ -1,0 +1,5 @@
+#!/bin/sh
+pushd $(dirname $0) >/dev/null
+rm -rf node_modules
+rm -f sitedl
+popd >/dev/null
