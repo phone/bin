@@ -1,0 +1,8 @@
+#!/bin/sh
+git init
+git annex init
+git config gcrypt.participants $1
+git config gcrypt.publish-participants true
+git config user.signingkey $1
+git config gcrypt.gpg-args '--use-agent'
+
