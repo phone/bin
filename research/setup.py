@@ -18,6 +18,7 @@ setup(
             'research-create-remote-user = research.research:main_create_remote_user',
             'research-install-authorized-key = research.research:main_install_authorized_key',
             'research-install-packages = research.research:main_install_packages',
+            'research-prepare-user = research.research:main_prepare_user',
         ],
     },
     include_package_data=True,
