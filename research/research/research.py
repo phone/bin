@@ -8,9 +8,12 @@ from fabric.api import run, sudo, put, cd, settings, task, execute
 
 UBUNTU_PACKAGES = [
     'build-essential',
+    'gdb',
+    'clang',
     'cmake',
     'git',
     'python-dev',
+    'python-pip',
     'htop',
     'atop',
     'sysstat',
