@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ ! -z "$1" ]; then
+        echo "root    ALL=(ALL) NOPASSWD: ALL" >> $1
+        echo "%wheel    ALL=(ALL) NOPASSWD: ALL" >> $1
+else
+        EDITOR2=$EDITOR
+        export EDITOR=$0
+        /usr/sbin/visudo
+        export EDITOR=$EDITOR2
+fi

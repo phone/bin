@@ -1,0 +1,23 @@
+#!/bin/bash
+# git difftool, calls FileMerge with project as -merge target
+# better than using opendiff
+#
+# cd to your project dir and and run difftool like this:
+#   git difftool -d -x gdiff
+
+# find top level of git project
+dir=$PWD
+until [ -e "$dir/.git" ]; do
+  if [ "$dir" == "/" ]; then
+    echo "Not a git repository" >&2
+    exit 1;
+  fi
+  dir=`dirname "$dir"`
+done
+
+# open fresh FileMerge and wait for termination, avoids issues with git temp files
+open -a FileMerge -n -W --args -left "$1" -right "$2" -merge "$dir"
+
+# references:
+# http://hints.macworld.com/article.php?story=20070220223441729
+# https://gist.github.com/bkeating/329690
