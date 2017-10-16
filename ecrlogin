@@ -1,0 +1,3 @@
+#!/bin/bash
+# Log in to AWS Elastic Container Registry. Assumes `aws` is installed in the global pyenv version.
+$(echo $(PYENV_VERSION="$(pyenv global)" aws ecr get-login --no-include-email --region us-east-1):443)
