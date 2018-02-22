@@ -1,0 +1,32 @@
+#!/bin/bash
+
+DOCKER_REPO='652637927798.dkr.ecr.us-east-1.amazonaws.com/jana'
+DOCKER_IMAGE=
+DOCKER_TAG=
+
+usage () {
+    cat <<EOF
+usage: ecrpush [-r REPO] IMAGE TAG
+
+Push docker image IMAGE to private REPO as TAG. If you pass REPO, don't include a trailing slash.
+
+Assumes you're already logged in.
+EOF
+    exit
+}
+
+while getopts ":r:" opt; do
+    case $opt in
+        r) DOCKER_REPO=$OPTARG ;;
+        h|?) usage ;;
+    esac
+done
+
+shift $(( $OPTIND - 1))
+DOCKER_IMAGE=$1
+DOCKER_TAG=$2
+[ -z $DOCKER_IMAGE ] && usage
+[ -z $DOCKER_TAG ] && usage
+
+docker tag $DOCKER_IMAGE ${DOCKER_REPO}/${DOCKER_TAG}
+docker push ${DOCKER_REPO}/${DOCKER_TAG}

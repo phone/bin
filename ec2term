@@ -1,0 +1,19 @@
+#!/bin/bash
+
+INSTANCE_ID=
+
+usage () {
+    cat <<EOF
+usage: ec2term INSTANCE-ID
+
+Terminate an ec2 instance in an ASG, without decrementing the desired capacity (the default behavior). This forces a new instance to come up in place of the old one.
+
+Requirements:
+ * awscli Python package.
+EOF
+}
+
+INSTANCE_ID=$1
+[ -z $INSTANCE_ID ] && usage
+
+aws --region us-east-1 autoscaling terminate-instance-in-auto-scaling-group --no-should-decrement-desired-capacity --instance-id $INSTANCE_ID

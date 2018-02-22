@@ -1,3 +1,32 @@
 #!/bin/bash
 # Log in to AWS Elastic Container Registry. Assumes `aws` is installed in the global pyenv version.
-$(echo $(PYENV_VERSION="$(pyenv global)" aws ecr get-login --no-include-email --region us-east-1):443)
+
+DOCKER_EDGE=
+
+usage () {
+    cat <<EOF
+usage: ecrlogin [-e]
+
+Log in to AWS Elastic Container Registry.
+
+Pass -e if you're on Docker Edge 18.x.x or newer, which has some different mechanics that the awscli hasn't caught up with yet.
+
+Requirements:
+ * awscli Python package.
+ * docker
+EOF
+    exit
+}
+
+while getopts ':e' opt; do
+    case $opt in
+        e) DOCKER_EDGE=yes ;;
+        h|?) usage ;;
+    esac
+done;
+
+if [ -z $DOCKER_EDGE ]; then
+    $(echo $(PYENV_VERSION="$(pyenv global)" aws ecr get-login --no-include-email --region us-east-1):443)
+else
+    $(echo "$(aws ecr get-login --region us-east-1)" | sed -e 's/\-e none //g')
+fi
