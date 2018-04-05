@@ -1,2 +1,2 @@
 #!/bin/bash
-git grep -n $(acmedot)
+git grep -n "$(acmedot)" "$(git rev-parse --show-toplevel)"
