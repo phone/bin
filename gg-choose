@@ -1,0 +1,2 @@
+#!/bin/bash
+git grep -n "$(acmedot)" "$(git rev-parse --show-toplevel)" | choose -w 80 -s 18 | awk -F':' '{ printf("%s:%s", $1, $2) }' | xargs -n1 -I{} plumb -d edit {}
