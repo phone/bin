@@ -1,0 +1,8 @@
+#!/bin/bash
+
+backlight_file='/sys/class/backlight/intel_backlight/brightness'
+newval=$(cat $backlight_file | awk '{print $1 + 50}')
+if [ $newval -gt 999 ]; then
+	newval='999'
+fi
+echo $newval > $backlight_file
