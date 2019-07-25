@@ -1,0 +1,8 @@
+#!/bin/bash
+
+Format="png"
+
+InputFilename=$1
+OutputFilename="${InputFilename%%.dot}.${Format}"
+
+dot "-T${Format}" ${InputFilename} -o ${OutputFilename} && eom ${OutputFilename}
